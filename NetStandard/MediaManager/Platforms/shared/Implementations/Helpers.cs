@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Plugin.MediaManager.Abstractions.Implementations
+namespace MediaManager.Abstractions.Implementations
 {
     public static class Helpers
     {

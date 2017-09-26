@@ -1,82 +1,117 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using Plugin.MediaManager.Abstractions.Enums;
-using Plugin.MediaManager.Abstractions.EventArguments;
+using MediaManager.Abstractions.Enums;
+using MediaManager.Abstractions.EventArguments;
 
-namespace Plugin.MediaManager.Abstractions.Implementations
+namespace MediaManager.Abstractions.Implementations
 {
     /// <summary>
     ///     Implementation for MediaManager
     /// </summary>
     public abstract class MediaManagerBase : IMediaManager, IDisposable
     {
-        private IPlaybackManager _currentPlaybackManager;
-
-        private Func<IMediaFile, Task> _onBeforePlay;
-
-        private IPlaybackManager CurrentPlaybackManager
-        {
-            get
-            {
-                if (_currentPlaybackManager == null && CurrentMediaFile != null) SetCurrentPlayer(CurrentMediaFile.Type);
-
-                if (_currentPlaybackManager != null)
-                {
-                    _currentPlaybackManager.RequestHeaders = RequestHeaders;
-                }
-
-                return _currentPlaybackManager;
-            }
-        }
-
-        public virtual IMediaQueue MediaQueue { get; set; } = new MediaQueue();
-
         public abstract IAudioPlayer AudioPlayer { get; set; }
 
         public abstract IVideoPlayer VideoPlayer { get; set; }
 
-        public abstract IMediaNotificationManager MediaNotificationManager { get; set; }
+        public abstract INotificationManager NotificationManager { get; set; }
 
         public abstract IMediaExtractor MediaExtractor { get; set; }
 
         public abstract IVolumeManager VolumeManager { get; set; }
 
-        public IPlaybackController PlaybackController { get; set; }
+        public virtual IMediaQueue MediaQueue { get; set; } = new MediaQueue();
 
-        public MediaPlayerStatus Status => CurrentPlaybackManager?.Status ?? MediaPlayerStatus.Stopped;
+        public virtual IPlaybackController PlaybackController { get; set; }
 
-        public TimeSpan Position => CurrentPlaybackManager?.Position ?? TimeSpan.Zero;
-
-        public TimeSpan Duration => CurrentPlaybackManager?.Duration ?? TimeSpan.Zero;
-
-        public TimeSpan Buffered => CurrentPlaybackManager?.Buffered ?? TimeSpan.Zero;
-
-        public event StatusChangedEventHandler StatusChanged;
-
-        public event PlayingChangedEventHandler PlayingChanged;
-
-        public event BufferingChangedEventHandler BufferingChanged;
-
-        public event MediaFinishedEventHandler MediaFinished;
-
-        public event MediaFailedEventHandler MediaFailed;
-
-        public event MediaFileChangedEventHandler MediaFileChanged;
-
-        public event MediaFileFailedEventHandler MediaFileFailed;
-
-        private IMediaFile CurrentMediaFile => MediaQueue.Current;
-
-        public Dictionary<string, string> RequestHeaders { get; set; } = new Dictionary<string, string>();
-
-        private bool _startedPlaying;
+        public IPlaybackManager CurrentPlaybackManager { get; private set; }
 
         protected MediaManagerBase()
         {
             PlaybackController = new PlaybackController(this);
         }
 
+        public Task Play(string url, MediaItemType type)
+        {
+            return Play(new MediaItem(url, type));
+        }
+
+        public Task Play(IMediaItem item)
+        {
+            switch (item.Type) {
+                case MediaItemType.Audio:
+                    CurrentPlaybackManager = AudioPlayer;
+                    return AudioPlayer.Play(item);
+                case MediaItemType.Video:
+                    CurrentPlaybackManager = VideoPlayer;
+                    return VideoPlayer.Play(item);
+                default:
+                    return Task.CompletedTask;
+            }
+        }
+
+        public Task Play(IEnumerable<IMediaItem> items)
+        {
+            MediaQueue.AddRange(items);
+            return Play(MediaQueue.FirstOrDefault());
+        }
+
+        public Task Play(Stream stream, MediaItemType type)
+        {
+            switch(type) {
+                case MediaItemType.Audio:
+                    CurrentPlaybackManager = AudioPlayer;
+                    return AudioPlayer.Play(stream);
+                case MediaItemType.Video:
+                    CurrentPlaybackManager = VideoPlayer;
+                    return VideoPlayer.Play(stream);
+                default:
+                    return Task.CompletedTask;
+            }
+        }
+
+        public Task Play(FileInfo file, MediaItemType type)
+        {
+            switch (type) {
+                case MediaItemType.Audio:
+                    CurrentPlaybackManager = AudioPlayer;
+                    return AudioPlayer.Play(file);
+                case MediaItemType.Video:
+                    CurrentPlaybackManager = VideoPlayer;
+                    return VideoPlayer.Play(file);
+                default:
+                    return Task.CompletedTask;
+            }
+        }
+
+        //public PlaybackState State => CurrentPlaybackManager?.State ?? PlaybackState.Stopped;
+
+        //public TimeSpan Position => CurrentPlaybackManager?.Position ?? TimeSpan.Zero;
+
+        //public TimeSpan Duration => CurrentPlaybackManager?.Duration ?? TimeSpan.Zero;
+
+        //public TimeSpan Buffered => CurrentPlaybackManager?.Buffered ?? TimeSpan.Zero;
+
+        //public event StatusChangedEventHandler StatusChanged;
+
+        //public event PlayingChangedEventHandler PlayingChanged;
+
+        //public event BufferingChangedEventHandler BufferingChanged;
+
+        //public event MediaFinishedEventHandler MediaFinished;
+
+        //public event MediaFailedEventHandler MediaFailed;
+
+        //private IMediaItem CurrentMediaFile => MediaQueue.Current;
+
+        //public Dictionary<string, string> RequestHeaders { get; set; } = new Dictionary<string, string>();
+
+        //private bool _startedPlaying;
+
+        /*
         public async Task PlayNext()
         {
             await RaiseMediaFileFailedEventOnException(async () =>
@@ -137,11 +172,11 @@ namespace Plugin.MediaManager.Abstractions.Implementations
             return Play(mediaFile);
         }
 
-        public async Task Play(IMediaFile mediaFile = null)
+        public async Task Play(IMediaItem mediaFile = null)
         {
             if (mediaFile == null)
             {
-                if (Status == MediaPlayerStatus.Paused)
+                if (Status == PlaybackState.Paused)
                 {
                     await Resume();
                     return;
@@ -150,7 +185,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
                 mediaFile = CurrentMediaFile;
             }
 
-            if (_currentPlaybackManager != null && Status == MediaPlayerStatus.Failed)
+            if (_currentPlaybackManager != null && Status == PlaybackState.Failed)
             {
                 await PlayNext();
                 return;
@@ -180,7 +215,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
         /// </summary>
         /// <param name="mediaFiles"></param>
         /// <returns></returns>
-        public async Task Play(IEnumerable<IMediaFile> mediaFiles)
+        public async Task Play(IEnumerable<IMediaItem> mediaFiles)
         {
             MediaQueue.Clear();
             MediaQueue.AddRange(mediaFiles);
@@ -190,7 +225,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
             MediaNotificationManager?.StartNotification(CurrentMediaFile);
         }
 
-        public void SetOnBeforePlay(Func<IMediaFile, Task> beforePlay)
+        public void SetOnBeforePlay(Func<IMediaItem, Task> beforePlay)
         {
             _onBeforePlay = beforePlay;
         }
@@ -278,7 +313,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
             AddEventHandlers();
         }
 
-        private async Task ExtractMediaInformation(IMediaFile mediaFile)
+        private async Task ExtractMediaInformation(IMediaItem mediaFile)
         {
             var index = MediaQueue.IndexOf(mediaFile);
             await MediaExtractor.ExtractMediaInfo(mediaFile);
@@ -295,7 +330,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
         {
             if (sender != CurrentPlaybackManager) return;
 
-            if (Status == MediaPlayerStatus.Playing)
+            if (Status == PlaybackState.Playing)
             {
                 _startedPlaying = false;
             }
@@ -324,7 +359,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
 
             MediaFinished?.Invoke(sender, e);
 
-            if (MediaQueue.Repeat == RepeatType.RepeatOne)
+            if (MediaQueue.Repeat == RepeatMode.RepeatOne)
             {
                 await Seek(TimeSpan.Zero);
                 await Resume();
@@ -339,7 +374,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
         {
             if (sender == CurrentPlaybackManager)
             {
-                OnStatusChanged(sender, new StatusChangedEventArgs(MediaPlayerStatus.Failed));
+                OnStatusChanged(sender, new StatusChangedEventArgs(PlaybackState.Failed));
             }
             MediaFailed?.Invoke(sender, e);
         }
@@ -362,7 +397,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
         {
             if (sender == CurrentPlaybackManager)
             {
-                OnStatusChanged(sender, new StatusChangedEventArgs(MediaPlayerStatus.Failed));
+                OnStatusChanged(sender, new StatusChangedEventArgs(PlaybackState.Failed));
                 MediaFileFailed?.Invoke(sender, e);
             }
         }
@@ -384,7 +419,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
             _currentPlaybackManager.PlayingChanged -= OnPlayingChanged;
             _currentPlaybackManager.StatusChanged -= OnStatusChanged;
         }
-
+        */
         #region IDisposable        
         // Flag: Has Dispose already been called?
         bool disposed = false;
@@ -405,7 +440,7 @@ namespace Plugin.MediaManager.Abstractions.Implementations
             if (disposing)
             {
                 // Free any other managed objects here.
-                RemoveEventHandlers();
+                //RemoveEventHandlers();
             }
 
             // Free any unmanaged objects here.

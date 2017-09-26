@@ -1,140 +1,100 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Plugin.MediaManager.Abstractions.Enums;
+using MediaManager.Abstractions.Enums;
 
-namespace Plugin.MediaManager.Abstractions.Implementations
+namespace MediaManager.Abstractions.Implementations
 {
     public class PlaybackController: IPlaybackController
     {
-        private readonly IMediaManager _mediaManager;
+        private MediaManagerBase mediaManagerBase;
 
-        public virtual double StepSeconds => 10;
-
-        public virtual double SeekToStartTreshold => 3;
-
-        private IMediaQueue Queue => _mediaManager.MediaQueue;
-
-        private double PositionSeconds => _mediaManager.Position.TotalSeconds;
-
-        public PlaybackController(IMediaManager mediaManager)
+        public PlaybackController()
         {
-            _mediaManager = mediaManager;
         }
 
-        public virtual async Task PlayPause()
+        public PlaybackController(MediaManagerBase mediaManagerBase)
         {
-            var status = _mediaManager.Status;
-
-            var isPaused = status == MediaPlayerStatus.Paused;
-            var isStopped = status == MediaPlayerStatus.Stopped;
-
-            if (isPaused || isStopped)
-            {
-                await Play();
-            }
-            else
-            {
-                await Pause();
-            }
+            this.mediaManagerBase = mediaManagerBase;
         }
 
-        public virtual async Task Play()
+        public Task PlayFromQueueByIndex(int index)
         {
-            await _mediaManager.Play();
+            throw new NotImplementedException();
         }
 
-        public virtual async Task Pause()
+        public Task PlayFromQueueByMediaFile(IMediaItem file)
         {
-            await _mediaManager.Pause();
+            throw new NotImplementedException();
         }
 
-        public virtual async Task Stop()
+        public Task SeekForward(TimeSpan? time = null)
         {
-            await _mediaManager.Stop();
+            throw new NotImplementedException();
         }
 
-        public virtual async Task PlayPreviousOrSeekToStart()
+        public Task SeekBackward(TimeSpan? time = null)
         {
-            if (PositionSeconds > SeekToStartTreshold)
-            {
-                await SeekToStart();
-            }
-            else
-            {
-                await PlayPrevious();
-            }
+            throw new NotImplementedException();
         }
 
-        public virtual async Task PlayNext()
+        public Task SeekTo(TimeSpan position)
         {
-            await _mediaManager.PlayNext();
+            throw new NotImplementedException();
         }
 
-        public virtual async Task PlayPrevious()
+        public void SetRepeatMode(RepeatMode type)
         {
-            if (Queue.HasPrevious())
-            {
-                await _mediaManager.PlayPrevious();
-            }
-            else
-            {
-                await SeekToStart();
-            }
+            throw new NotImplementedException();
         }
 
-        public virtual async Task SeekToStart()
+        public void SetShuffleMode(ShuffleMode type)
         {
-            await SeekTo(0);
+            throw new NotImplementedException();
         }
 
-        public virtual async Task StepForward()
+        public void SetRating()
         {
-            var destination = PositionSeconds + StepSeconds;
-
-            await SeekTo(destination);
+            throw new NotImplementedException();
         }
 
-        public virtual async Task StepBackward()
+        public Task Play()
         {
-            var destination = PositionSeconds - StepSeconds;
-
-            await SeekTo(destination);
+            throw new NotImplementedException();
         }
 
-        public virtual async Task SeekTo(double seconds)
+        public Task Pause()
         {
-            if (_mediaManager.Duration.TotalSeconds < seconds)
-            {
-                seconds = _mediaManager.Duration.TotalSeconds;
-            } else if (seconds < 0)
-            {
-                seconds = 0;
-            }
-
-            var position = TimeSpan.FromSeconds(seconds);
-
-            await _mediaManager.Seek(position);
+            throw new NotImplementedException();
         }
 
-        public virtual void ToggleRepeat()
+        public Task PlayPause()
         {
-            switch (Queue.Repeat)
-            {
-                case RepeatType.None:
-                    Queue.Repeat = RepeatType.RepeatAll;
-                    break;
-                case RepeatType.RepeatAll:
-                    Queue.Repeat = RepeatType.RepeatOne;
-                    break;
-                case RepeatType.RepeatOne:
-                    Queue.Repeat = RepeatType.None;
-                    break;
-            }
+            throw new NotImplementedException();
         }
 
-        public virtual void ToggleShuffle()
+        public Task Stop()
         {
-            Queue.IsShuffled = !Queue.IsShuffled;
+            throw new NotImplementedException();
+        }
+
+        public Task PlayPreviousOrSeekToStart()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PlayPrevious()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PlayNext()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SeekToStart()
+        {
+            throw new NotImplementedException();
         }
     }
 }

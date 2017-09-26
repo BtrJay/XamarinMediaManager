@@ -1,102 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Plugin.MediaManager.Abstractions;
-using Plugin.MediaManager.Abstractions.Enums;
+using Android.App;
+using Android.Content;
+using Android.Support.V4.Media;
+using Android.Support.V4.Media.Session;
+using MediaManager.Abstractions;
+using MediaManager.Abstractions.Enums;
+using MediaManager.Abstractions.Implementations;
+using MediaManager.Platforms.Android;
 
 namespace Plugin.MediaManager
 {
-    public class MediaManagerImplementation : IMediaManager
+    public class MediaManagerImplementation : MediaManagerBase
     {
         public MediaManagerImplementation()
         {
         }
 
-        public IAudioPlayer AudioPlayer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IVideoPlayer VideoPlayer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IMediaQueue MediaQueue { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IMediaNotificationManager MediaNotificationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IMediaExtractor MediaExtractor { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IVolumeManager VolumeManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IPlaybackController PlaybackController { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public MediaPlayerStatus Status => throw new NotImplementedException();
-
-        public TimeSpan Position => throw new NotImplementedException();
-
-        public TimeSpan Duration => throw new NotImplementedException();
-
-        public TimeSpan Buffered => throw new NotImplementedException();
-
-        public Dictionary<string, string> RequestHeaders { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public event MediaFileChangedEventHandler MediaFileChanged;
-        public event MediaFileFailedEventHandler MediaFileFailed;
-        public event StatusChangedEventHandler StatusChanged;
-        public event PlayingChangedEventHandler PlayingChanged;
-        public event BufferingChangedEventHandler BufferingChanged;
-        public event MediaFinishedEventHandler MediaFinished;
-        public event MediaFailedEventHandler MediaFailed;
-
-        public Task Pause()
+        private IAudioPlayer _audioPlayer;
+        public override IAudioPlayer AudioPlayer
         {
-            throw new NotImplementedException();
+            get { return _audioPlayer ?? (_audioPlayer = new AudioPlayerImplementation(this)); }
+            set { _audioPlayer = value; }
         }
 
-        public Task Play(string url)
+        private IVideoPlayer _videoPlayer;
+        public override IVideoPlayer VideoPlayer
         {
-            throw new NotImplementedException();
+            get { return _videoPlayer ?? (_videoPlayer = new VideoPlayerImplementation(this)); }
+            set { _videoPlayer = value; }
         }
 
-        public Task Play(string url, MediaFileType fileType)
+        private INotificationManager _notificationManager;
+        public override INotificationManager NotificationManager
         {
-            throw new NotImplementedException();
+            get { return _notificationManager ?? (_notificationManager = new NotificationManagerImplementation(this)); }
+            set { _notificationManager = value; }
         }
 
-        public Task Play(string url, MediaFileType fileType, ResourceAvailability availability)
+        private IMediaExtractor _mediaExtractor;
+        public override IMediaExtractor MediaExtractor
         {
-            throw new NotImplementedException();
+            get { return _mediaExtractor ?? (_mediaExtractor = new MediaExtractorImplementation(this)); }
+            set { _mediaExtractor = value; }
         }
 
-        public Task Play(IEnumerable<IMediaFile> mediaFiles)
+        private IVolumeManager _volumeManager;
+        public override IVolumeManager VolumeManager
         {
-            throw new NotImplementedException();
+            get { return _volumeManager ?? (_volumeManager = new VolumeManagerImplementation(this)); }
+            set { _volumeManager = value; }
         }
 
-        public Task Play(IMediaFile mediaFile = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task PlayByPosition(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task PlayNext()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task PlayPrevious()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Seek(TimeSpan position)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetOnBeforePlay(Func<IMediaFile, Task> beforePlay)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Stop()
-        {
-            throw new NotImplementedException();
-        }
+        public Context Context { get; } = Application.Context;
     }
 }

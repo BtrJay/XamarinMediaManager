@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Plugin.MediaManager.Abstractions;
-using Plugin.MediaManager.Abstractions.Enums;
+using MediaManager.Abstractions;
+using MediaManager.Abstractions.Enums;
 
 namespace Plugin.MediaManager
 {
@@ -16,12 +17,12 @@ namespace Plugin.MediaManager
         public IAudioPlayer AudioPlayer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public IVideoPlayer VideoPlayer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public IMediaQueue MediaQueue { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IMediaNotificationManager MediaNotificationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public INotificationManager MediaNotificationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public IMediaExtractor MediaExtractor { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public IVolumeManager VolumeManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public IPlaybackController PlaybackController { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public MediaPlayerStatus Status => throw new NotImplementedException();
+        public PlaybackState Status => throw new NotImplementedException();
 
         public TimeSpan Position => throw new NotImplementedException();
 
@@ -31,8 +32,10 @@ namespace Plugin.MediaManager
 
         public Dictionary<string, string> RequestHeaders { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public event MediaFileChangedEventHandler MediaFileChanged;
-        public event MediaFileFailedEventHandler MediaFileFailed;
+        public IPlaybackManager CurrentPlaybackManager => throw new NotImplementedException();
+
+        public INotificationManager NotificationManager { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public event StatusChangedEventHandler StatusChanged;
         public event PlayingChangedEventHandler PlayingChanged;
         public event BufferingChangedEventHandler BufferingChanged;
@@ -49,22 +52,27 @@ namespace Plugin.MediaManager
             throw new NotImplementedException();
         }
 
-        public Task Play(string url, MediaFileType fileType)
+        public Task Play(string url, MediaItemType fileType)
         {
             throw new NotImplementedException();
         }
 
-        public Task Play(string url, MediaFileType fileType, ResourceAvailability availability)
+        public Task Play(IEnumerable<IMediaItem> mediaFiles)
         {
             throw new NotImplementedException();
         }
 
-        public Task Play(IEnumerable<IMediaFile> mediaFiles)
+        public Task Play(IMediaItem mediaFile = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task Play(IMediaFile mediaFile = null)
+        public Task Play(Stream stream, MediaItemType type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task Play(FileInfo file, MediaItemType type)
         {
             throw new NotImplementedException();
         }
@@ -89,7 +97,7 @@ namespace Plugin.MediaManager
             throw new NotImplementedException();
         }
 
-        public void SetOnBeforePlay(Func<IMediaFile, Task> beforePlay)
+        public void SetOnBeforePlay(Func<IMediaItem, Task> beforePlay)
         {
             throw new NotImplementedException();
         }

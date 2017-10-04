@@ -7,6 +7,13 @@ namespace Plugin.MediaManager
 {
     public class VolumeManagerImplementation : VolumeProviderCompat.Callback, IVolumeManager
     {
+        private MediaManagerImplementation mediaManagerImplementation;
+
+        public VolumeManagerImplementation(MediaManagerImplementation mediaManagerImplementation)
+        {
+            this.mediaManagerImplementation = mediaManagerImplementation;
+        }
+
         public float CurrentVolume { get; set; }
 
         public float MaxVolume { get; set; }

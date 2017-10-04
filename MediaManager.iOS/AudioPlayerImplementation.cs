@@ -19,7 +19,7 @@ namespace Plugin.MediaManager
 
         private readonly IVersionHelper _versionHelper;
 
-        private IMediaFile _currentMediaFile;
+        private IMediaItem _currentMediaFile;
 
         public static readonly NSString StatusObservationContext = new NSString("Status");
 
@@ -28,7 +28,7 @@ namespace Plugin.MediaManager
         public static readonly NSString LoadedTimeRangesObservationContext = new NSString("TimeRanges");
 
         private AVPlayer _player;
-        private MediaPlayerStatus _status;
+        private PlaybackState _status;
 
         public Dictionary<string, string> RequestHeaders { get; set; }
 
@@ -37,13 +37,13 @@ namespace Plugin.MediaManager
             _volumeManager = volumeManager;
             _versionHelper = new VersionHelper();
 
-            _status = MediaPlayerStatus.Stopped;
+            _status = PlaybackState.Stopped;
 
             // Watch the buffering status. If it changes, we may have to resume because the playing stopped because of bad network-conditions.
             BufferingChanged += (sender, e) =>
             {
                 // If the player is ready to play, it's paused and the status is still on PLAYING, go on!
-                var isPlaying = Status == MediaPlayerStatus.Playing;
+                var isPlaying = Status == PlaybackState.Playing;
                 if (CurrentItem.Status == AVPlayerItemStatus.ReadyToPlay && Rate == 0.0f && isPlaying)
                     Player.Play();
             };
@@ -158,7 +158,7 @@ namespace Plugin.MediaManager
 
                 CurrentItem.Seek(CMTime.FromSeconds(0d, 1));
 
-                Status = MediaPlayerStatus.Stopped;
+                Status = PlaybackState.Stopped;
             });
         }
 
@@ -166,7 +166,7 @@ namespace Plugin.MediaManager
         {
             await Task.Run(() =>
             {
-                Status = MediaPlayerStatus.Paused;
+                Status = PlaybackState.Paused;
 
                 if (CurrentItem == null)
                     return;
@@ -176,7 +176,7 @@ namespace Plugin.MediaManager
             });
         }
 
-        public MediaPlayerStatus Status
+        public PlaybackState Status
         {
             get { return _status; }
             private set
@@ -249,13 +249,13 @@ namespace Plugin.MediaManager
             });
         }
 
-        public async Task Play(IMediaFile mediaFile = null)
+        public async Task Play(IMediaItem mediaFile = null)
         {
             var sameMediaFile = mediaFile == null || mediaFile.Equals(_currentMediaFile);
 
-            if (Status == MediaPlayerStatus.Paused && sameMediaFile)
+            if (Status == PlaybackState.Paused && sameMediaFile)
             {
-                Status = MediaPlayerStatus.Playing;
+                Status = PlaybackState.Playing;
                 //We are simply paused so just start again
                 Player.Play();
                 return;
@@ -271,7 +271,7 @@ namespace Plugin.MediaManager
             {
                 InitializePlayer();
 
-                Status = MediaPlayerStatus.Buffering;
+                Status = PlaybackState.Buffering;
 
                 var playerItem = GetPlayerItem(nsUrl);
 
@@ -296,7 +296,7 @@ namespace Plugin.MediaManager
             catch (Exception ex)
             {
                 OnMediaFailed();
-                Status = MediaPlayerStatus.Stopped;
+                Status = PlaybackState.Stopped;
 
                 //unable to start playback log error
                 Console.WriteLine("Unable to start playback: " + ex);
@@ -372,17 +372,17 @@ namespace Plugin.MediaManager
         {
             Console.WriteLine("Status Observed Method {0}", CurrentItem.Status);
 
-            var isBuffering = Status == MediaPlayerStatus.Buffering;
+            var isBuffering = Status == PlaybackState.Buffering;
 
             if (CurrentItem.Status == AVPlayerItemStatus.ReadyToPlay && isBuffering)
             {
-                Status = MediaPlayerStatus.Playing;
+                Status = PlaybackState.Playing;
                 Player.Play();
             }
             else if (CurrentItem.Status == AVPlayerItemStatus.Failed)
             {
                 OnMediaFailed();
-                Status = MediaPlayerStatus.Stopped;
+                Status = PlaybackState.Stopped;
             }
         }
 
@@ -390,10 +390,10 @@ namespace Plugin.MediaManager
         {
             var stoppedPlaying = Rate == 0.0;
 
-            if (stoppedPlaying && Status == MediaPlayerStatus.Playing)
+            if (stoppedPlaying && Status == PlaybackState.Playing)
             {
                 //Update the status becuase the system changed the rate.
-                Status = MediaPlayerStatus.Paused;
+                Status = PlaybackState.Paused;
             }
         }
 

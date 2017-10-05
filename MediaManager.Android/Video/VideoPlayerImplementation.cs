@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.Media;
@@ -13,319 +13,61 @@ using Plugin.MediaManager.Abstractions.EventArguments;
 
 namespace Plugin.MediaManager
 {
-    public class VideoPlayerImplementation : Java.Lang.Object, 
-        IVideoPlayer,
-        MediaPlayer.IOnCompletionListener,
-        MediaPlayer.IOnErrorListener,
-        MediaPlayer.IOnPreparedListener,
-        MediaPlayer.IOnInfoListener
+    public class VideoPlayerImplementation : Java.Lang.Object,
+        IVideoPlayer
     {
-        public VideoPlayerImplementation()
+        private MediaManagerImplementation mediaManagerImplementation;
+
+        public VideoPlayerImplementation(MediaManagerImplementation mediaManagerImplementation)
         {
-            _status = MediaPlayerStatus.Stopped;
-			StatusChanged += (sender, args) => OnPlayingHandler(args);
+            this.mediaManagerImplementation = mediaManagerImplementation;
         }
 
-		private bool isPlayerReady = false;        
+        public IVideoSurface RenderSurface { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        private IScheduledExecutorService _executorService = Executors.NewSingleThreadScheduledExecutor();
-		private IScheduledFuture _scheduledFuture;
+        public bool IsReadyRendering => throw new NotImplementedException();
 
-		private void OnPlayingHandler(StatusChangedEventArgs args)
-		{
-			if (args.Status == MediaPlayerStatus.Playing)
-			{
-				CancelPlayingHandler();
-				StartPlayingHandler();
-			}
-			if (args.Status == MediaPlayerStatus.Stopped || args.Status == MediaPlayerStatus.Failed || args.Status == MediaPlayerStatus.Paused)
-				CancelPlayingHandler();
-		}
-        
-		private void CancelPlayingHandler()
-		{
-			_scheduledFuture?.Cancel(false);
-		}
+        public VideoAspectMode AspectMode { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-		private void StartPlayingHandler()
-		{
-			var handler = new Handler();
-			var runnable = new Runnable(() => { handler.Post(OnPlaying); });
-			if (!_executorService.IsShutdown)
-			{                
-                _scheduledFuture = _executorService.ScheduleAtFixedRate(runnable, 100, 1000, TimeUnit.Milliseconds);
-			}
-		}
+        public PlaybackState State => throw new NotImplementedException();
 
-		private void OnPlaying()
-		{
-		    if (!IsReadyRendering)
-		        CancelPlayingHandler(); //RenderSurface is no longer valid => Cancel the periodic firing
+        public TimeSpan Position => throw new NotImplementedException();
 
-            var progress = (Position.TotalSeconds / Duration.TotalSeconds);
-			var position = Position;
-			var duration = Duration;
+        public TimeSpan Duration => throw new NotImplementedException();
 
-			PlayingChanged?.Invoke(this, new PlayingChangedEventArgs(
-			    !double.IsInfinity(progress) ? progress : 0,
-				position.TotalSeconds >= 0 ? position : TimeSpan.Zero,
-				duration.TotalSeconds >= 0 ? duration : TimeSpan.Zero));
-		}
+        public TimeSpan Buffered => throw new NotImplementedException();
 
-        /// <summary>
-        /// True when RenderSurface has been initialized and ready for rendering
-        /// </summary>
-        public bool IsReadyRendering => RenderSurface != null && !RenderSurface.IsDisposed;
+        public Dictionary<string, string> RequestHeaders { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        VideoView VideoViewCanvas => RenderSurface as VideoView;
+        public event StatusChangedEventHandler Status;
+        public event PlayingChangedEventHandler Playing;
+        public event BufferingChangedEventHandler Buffering;
+        public event MediaFinishedEventHandler Finished;
+        public event MediaFailedEventHandler Failed;
 
-        private IVideoSurface _renderSurface;
-        public IVideoSurface RenderSurface { 
-            get {
-                return _renderSurface;
-            } 
-            set {
-                if (!(value is VideoSurface))
-                    throw new ArgumentException("Not a valid video surface");
-
-                if (_renderSurface == value)
-                    return;
-
-                var canvas = (VideoSurface)value;                
-                _renderSurface = canvas;
-                
-                //New canvas object => need initialization
-                isPlayerReady = false;
-            }
-        }
-
-		private VideoAspectMode _aspectMode;
-		public VideoAspectMode AspectMode { 
-			get
-			{
-				return _aspectMode;
-			}
-			set {
-				//TODO: Wrap videoplayer to respect aspectmode
-				_aspectMode = value;
-			} 
-		}        
-
-        public IMediaFile CurrentFile { get; set; }
-        private Android.Net.Uri currentUri { get; set; }
-
-		public Dictionary<string, string> RequestHeaders { get; set; }
-
-        public bool UseNativeControls = false;
-
-        public event BufferingChangedEventHandler BufferingChanged;
-        public event MediaFailedEventHandler MediaFailed;
-        public event MediaFileFailedEventHandler MediaFileFailed;
-        public event MediaFileChangedEventHandler MediaFileChanged;
-        public event MediaFinishedEventHandler MediaFinished;
-        public event PlayingChangedEventHandler PlayingChanged;
-        public event StatusChangedEventHandler StatusChanged;
-
-		protected virtual void OnStatusChanged(StatusChangedEventArgs e)
-		{
-			StatusChanged?.Invoke(this, e);
-		}
-
-		protected virtual void OnPlayingChanged(PlayingChangedEventArgs e)
-		{
-			PlayingChanged?.Invoke(this, e);
-		}
-
-		protected virtual void OnBufferingChanged(BufferingChangedEventArgs e)
-		{
-			BufferingChanged?.Invoke(this, e);
-		}
-
-		protected virtual void OnMediaFinished(MediaFinishedEventArgs e)
-		{
-			MediaFinished?.Invoke(this, e);
-		}
-
-		protected virtual void OnMediaFailed(MediaFailedEventArgs e)
-		{
-			MediaFailed?.Invoke(this, e);
-		}
-
-		protected virtual void OnMediaFileChanged(MediaFileChangedEventArgs e)
-		{
-			MediaFileChanged?.Invoke(this, e);
-		}
-
-		protected virtual void OnMediaFileFailed(MediaFileFailedEventArgs e)
-		{
-			MediaFileFailed?.Invoke(this, e);
-		}
-        
-        public TimeSpan Buffered => IsReadyRendering == false ? TimeSpan.Zero : TimeSpan.FromSeconds(VideoViewCanvas.BufferPercentage);
-
-        public TimeSpan Duration => IsReadyRendering == false ? TimeSpan.Zero : TimeSpan.FromSeconds(VideoViewCanvas.Duration);
-        
-        public TimeSpan Position => IsReadyRendering == false ? TimeSpan.Zero : TimeSpan.FromSeconds(VideoViewCanvas.CurrentPosition);
-
-        private int lastPosition = 0;
-
-		private MediaPlayerStatus _status = MediaPlayerStatus.Stopped;
-        public MediaPlayerStatus Status
+        public Task Pause()
         {
-            get { return _status; }
-            private set
-            {
-                _status = value;
-				OnStatusChanged(new StatusChangedEventArgs(_status));
-            }
+            throw new NotImplementedException();
         }
 
-        public async Task Pause()
+        public Task Play(string url)
         {
-			lastPosition = VideoViewCanvas.CurrentPosition;
-            VideoViewCanvas.Pause();
-            Status = MediaPlayerStatus.Paused;
-            await Task.CompletedTask;
+            throw new NotImplementedException();
         }
 
-        public void Init()
+        public Task Play(IMediaItem item)
         {
-			Status = MediaPlayerStatus.Loading;
-
-            if (UseNativeControls)
-            {
-                var mediaController = new MediaController(((VideoView)RenderSurface).Context);
-                mediaController.SetAnchorView(VideoViewCanvas);
-                VideoViewCanvas.SetMediaController(mediaController);
-            }
-            
-            VideoViewCanvas.SetOnCompletionListener(this);
-            VideoViewCanvas.SetOnErrorListener(this);
-            VideoViewCanvas.SetOnPreparedListener(this);
-            VideoViewCanvas.SetOnInfoListener(this);
-        }
-        
-        public async Task Play(IMediaFile mediaFile = null)
-        {            
-            if (!IsReadyRendering)
-                //Android ViewRenderer might not initialize Control yet
-                return;
-
-			if (isPlayerReady == false)
-            {
-                //await Task.Delay(100);
-                Init();
-				isPlayerReady = true;
-            }
-
-			if (mediaFile == null || (mediaFile != null && string.IsNullOrEmpty(mediaFile.Url)))
-			{
-				return;
-			}
-
-            if (mediaFile != null && CurrentFile != mediaFile)
-            {
-                CurrentFile = mediaFile;
-                currentUri = Android.Net.Uri.Parse(mediaFile.Url);
-				VideoViewCanvas.StopPlayback();
-				//VideoViewCanvas.Suspend();
-				Status = MediaPlayerStatus.Stopped;
-            }
-
-            if (Status == MediaPlayerStatus.Paused)
-            {
-                //We are simply paused so just continue
-                VideoViewCanvas.SeekTo(lastPosition);
-                VideoViewCanvas.Start();
-
-                Status = MediaPlayerStatus.Playing;
-                return;
-            }
-
-            try
-            {
-                Status = MediaPlayerStatus.Buffering;
-				VideoViewCanvas.SetVideoURI(currentUri, RequestHeaders);
-            }
-            catch(System.Exception ex)
-            {
-				OnMediaFailed(new MediaFailedEventArgs(ex.Message, ex));
-                Status = MediaPlayerStatus.Stopped;
-            }
+            throw new NotImplementedException();
         }
 
-        public async Task Seek(TimeSpan position)
+        public Task Seek(TimeSpan position)
         {
-            int msec = Convert.ToInt32(position.TotalMilliseconds);
-            VideoViewCanvas.SeekTo(msec);
-            lastPosition = VideoViewCanvas.CurrentPosition;
-
-            await Task.CompletedTask;
+            throw new NotImplementedException();
         }
 
-        public async Task Stop()
+        public Task Stop()
         {
-            VideoViewCanvas.StopPlayback();
-            Status = MediaPlayerStatus.Stopped;
-            await Task.CompletedTask;
+            throw new NotImplementedException();
         }
-
-        public void OnCompletion(MediaPlayer mp)
-        {
-            Console.WriteLine($"OnCompletion");
-
-            OnMediaFinished(new MediaFinishedEventArgs(CurrentFile));
-        }
-
-        public bool OnError(MediaPlayer mp, MediaError what, int extra)
-        {
-            Console.WriteLine($"OnError: {what}");
-
-            Stop().Wait();
-            Status = MediaPlayerStatus.Failed;
-			OnMediaFailed(new MediaFailedEventArgs(what.ToString(), new System.Exception()));
-            return true;
-        }
-
-        public void OnPrepared(MediaPlayer mp)
-        {
-            Console.WriteLine($"OnPrepared: {Status}");
-
-            if (Status == MediaPlayerStatus.Buffering)
-				VideoViewCanvas.Start();
-
-            Status = MediaPlayerStatus.Playing;
-        }
-
-        public bool OnInfo(MediaPlayer mp, [GeneratedEnum] MediaInfo what, int extra)
-        {
-            Console.WriteLine($"OnInfo: {what}");
-
-            switch (what)
-			{
-				case MediaInfo.BadInterleaving:
-					break;
-				case MediaInfo.BufferingEnd:
-					break;
-				case MediaInfo.BufferingStart:
-					break;
-				case MediaInfo.MetadataUpdate:
-					break;
-				case MediaInfo.NotSeekable:
-					break;
-				case MediaInfo.SubtitleTimedOut:
-					break;
-				case MediaInfo.Unknown:
-					break;
-				case MediaInfo.UnsupportedSubtitle:
-					break;
-				case MediaInfo.VideoRenderingStart:
-					break;
-				case MediaInfo.VideoTrackLagging:
-					break;
-			}
-
-			return true;
-        }        
     }
 }

@@ -1,4 +1,4 @@
-﻿using Foundation;
+using Foundation;
 using Plugin.MediaManager.Forms.iOS;
 using UIKit;
 
@@ -12,8 +12,9 @@ namespace MediaForms.iOS
             VideoViewRenderer.Init();
             global::Xamarin.Forms.Forms.Init();
 
-            LoadApplication(new App());
-            
+            var touchEffect = new BuildIt.Forms.Controls.iOS.TouchEffect();
+            LoadApplication(new Standard.App());
+
             return base.FinishedLaunching(app, options);
         }
     }

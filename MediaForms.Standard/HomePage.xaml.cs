@@ -1,3 +1,4 @@
+using BuildIt;
 using Plugin.MediaManager;
 using Plugin.MediaManager.Abstractions.Enums;
 using Plugin.MediaManager.Abstractions.EventArguments;
@@ -5,11 +6,12 @@ using Plugin.MediaManager.Abstractions.Implementations;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
-namespace MediaForms
+namespace MediaForms.Standard
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class HomePage : ContentPage
@@ -142,19 +144,51 @@ namespace MediaForms
             }
         }
 
-        private void Slider_OnValueChanged(object sender, ValueChangedEventArgs e)
+        //private double ScrubbingValue;
+        public const double Threadshold = 1;
+
+        private CancellationTokenSource cancellationToken;
+
+        private async void Slider_OnValueChanged(object sender, ValueChangedEventArgs e)
         {
             try
             {
                 var currentValue = e.OldValue;
                 var valueToUpdate = e.NewValue;
-                Debug.WriteLine($"Current Streaming Position: {currentValue}");
-                Debug.WriteLine($"New Streaming Position: {valueToUpdate}");
-                CrossMediaManager.Current.PlaybackController.Pause();
-                CrossMediaManager.Current.PlaybackController.SeekTo(valueToUpdate);
+                var difference = valueToUpdate - currentValue;
+                difference = difference < 0 ? difference * -1 : difference;
+                if (difference > Threadshold)
+                {
+                    UserInteractingSlider = true;
+                    cancellationToken?.Cancel();
+                    cancellationToken = new CancellationTokenSource();
+
+                    await Task.Delay(100, cancellationToken.Token);
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    // Assume that user interacts with slider
+                    //await CrossMediaManager.Current.PlaybackController.Pause();
+                    await CrossMediaManager.Current.PlaybackController.SeekTo(valueToUpdate);
+                    UserInteractingSlider = false;
+                    //await CrossMediaManager.Current.PlaybackController.Play();
+                }
+
+                //Debug.WriteLine($"Current Streaming Position: {currentValue}");
+                //Debug.WriteLine($"New Streaming Position: {valueToUpdate}");
+                //if (UserInteractingSlider)
+                //{
+                //    ScrubbingValue = valueToUpdate;
+                //}
+
+                //CrossMediaManager.Current.PlaybackController.Pause();
+                //CrossMediaManager.Current.PlaybackController.SeekTo(valueToUpdate);
             }
             catch (Exception ex)
             {
+                ex.LogError();
             }
         }
 
@@ -175,5 +209,23 @@ namespace MediaForms
                 PlaybackSlider.Maximum = TotalDuration;
             }
         }
+
+        //private void OnSliderTouchEffectAction(object sender, TouchActionEventArgs e)
+        //{
+        //    if (e.Type == TouchActionType.Pressed)
+        //    {
+        //        UserInteractingSlider = true;
+        //    }
+
+        //    if (e.Type == TouchActionType.Released)
+        //    {
+        //        UserInteractingSlider = false;
+
+        //        //CrossMediaManager.Current.PlaybackController.Pause();
+        //        CrossMediaManager.Current.PlaybackController.SeekTo(PlaybackSlider.Value);
+        //        //CrossMediaManager.Current.PlaybackController.Play();
+        //        //PlaybackSlider.Value = ScrubbingValue;
+        //    }
+        //}
     }
 }

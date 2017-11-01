@@ -48,6 +48,27 @@ namespace MediaMvvmcrossForms.Services
             await mediaManager.PlaybackController.Play();
         }
 
+        public async Task PlayUrl(string url)
+        {
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                var mediaFile = new MediaFile
+                {
+                    Url = url,
+                    Type = MediaFileType.Audio
+                };
+
+                if (mediaManager.Status == MediaPlayerStatus.Playing)
+                {
+                    await Stop();
+                    // Delay to update playback state
+                    await Task.Delay(200);
+                }
+
+                await mediaManager.Play(mediaFile);
+            }
+        }
+
         public Task SeekTo(double streamingPosition)
         {
             return mediaManager.PlaybackController.SeekTo(streamingPosition);

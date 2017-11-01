@@ -29,6 +29,8 @@ namespace MediaMvvmcrossForms.Services.Interfaces
 
         Task SeekTo(double streamingPosition);
 
+        Task PlayUrl(string url);
+
         Task PlayList(List<MediaFile> mediaFilesList);
 
         Task Stop();

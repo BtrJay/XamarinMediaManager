@@ -2,9 +2,7 @@ using BuildIt;
 using MediaMvvmcrossForms.Services.Interfaces;
 using MvvmCross.Core.ViewModels;
 using Plugin.MediaManager.Abstractions.Enums;
-using Plugin.MediaManager.Abstractions.Implementations;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -86,48 +84,48 @@ namespace MediaMvvmcrossForms.ViewModels
         {
             if (!HasMediaFile)
             {
-                var audioFiles = new List<MediaFile>
-                {
-                    new MediaFile
-                    {
-                        Url = "https://audioboom.com/posts/5766044-follow-up-305.mp3?source=rss&amp;stitched=1",
-                        Type = MediaFileType.Audio,
-                        Metadata = new MediaFileMetadata
-                        {
-                            Title = "Test1"
-                        }
-                    },
-                    new MediaFile
-                    {
-                        Url = "https://media.acast.com/mydadwroteaporno/s3e1-london-thursday15.55localtime/media.mp3",
-                        Type = MediaFileType.Audio,
-                        Metadata = new MediaFileMetadata
-                        {
-                            Title = "Test2"
-                        }
-                    },
-                    new MediaFile
-                    {
-                        Url =
-                            "https://audioboom.com/posts/5770261-ep-306-a-theory-of-evolution.mp3?source=rss&amp;stitched=1",
-                        Type = MediaFileType.Audio,
-                        Metadata = new MediaFileMetadata
-                        {
-                            Title = "Test3"
-                        }
-                    },
-                    new MediaFile
-                    {
-                        Url = "https://audioboom.com/posts/5723344-ep-304-the-4th-dimension.mp3?source=rss&amp;stitched=1",
-                        Type = MediaFileType.Audio,
-                        Metadata = new MediaFileMetadata
-                        {
-                            Title = "Test4"
-                        }
-                    }
-                };
+                //var audioFiles = new List<MediaFile>
+                //{
+                //    new MediaFile
+                //    {
+                //        Url = "https://audioboom.com/posts/5766044-follow-up-305.mp3?source=rss&amp;stitched=1",
+                //        Type = MediaFileType.Audio,
+                //        Metadata = new MediaFileMetadata
+                //        {
+                //            Title = "Test1"
+                //        }
+                //    },
+                //    new MediaFile
+                //    {
+                //        Url = "https://media.acast.com/mydadwroteaporno/s3e1-london-thursday15.55localtime/media.mp3",
+                //        Type = MediaFileType.Audio,
+                //        Metadata = new MediaFileMetadata
+                //        {
+                //            Title = "Test2"
+                //        }
+                //    },
+                //    new MediaFile
+                //    {
+                //        Url =
+                //            "https://audioboom.com/posts/5770261-ep-306-a-theory-of-evolution.mp3?source=rss&amp;stitched=1",
+                //        Type = MediaFileType.Audio,
+                //        Metadata = new MediaFileMetadata
+                //        {
+                //            Title = "Test3"
+                //        }
+                //    },
+                //    new MediaFile
+                //    {
+                //        Url = "https://audioboom.com/posts/5723344-ep-304-the-4th-dimension.mp3?source=rss&amp;stitched=1",
+                //        Type = MediaFileType.Audio,
+                //        Metadata = new MediaFileMetadata
+                //        {
+                //            Title = "Test4"
+                //        }
+                //    }
+                //};
 
-                await playbackService.PlayList(audioFiles);
+                await playbackService.PlayUrl("https://audioboom.com/posts/5723344-ep-304-the-4th-dimension.mp3?source=rss&amp;stitched=1");
                 return;
             }
 

@@ -178,6 +178,22 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MediaManager.Abstractions\Plugin.MediaManager.Abstractions.csproj">
+      <Project>{6edb0588-ffc5-4ef5-8a99-9e241d0f878d}</Project>
+      <Name>Plugin.MediaManager.Abstractions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaManager.Android\Plugin.MediaManager.Android.csproj">
+      <Project>{56a56f17-7de1-4ca1-9617-bf32e971ac84}</Project>
+      <Name>Plugin.MediaManager.Android</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaManager.Forms\MediaManager.Forms.Android\Plugin.MediaManager.Forms.Android.csproj">
+      <Project>{c8566a9e-fb6b-4459-ac87-5db16d221d29}</Project>
+      <Name>Plugin.MediaManager.Forms.Android</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaManager.Forms\MediaManager.Forms\Plugin.MediaManager.Forms.csproj">
+      <Project>{67f9d3a8-f71e-4428-913f-c37ae82cdb24}</Project>
+      <Name>Plugin.MediaManager.Forms</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaMvvmcrossForms\MediaMvvmcrossForms.csproj">
       <Project>{0130144a-c487-410f-9a3b-abb27119b515}</Project>
       <Name>MediaMvvmcrossForms</Name>

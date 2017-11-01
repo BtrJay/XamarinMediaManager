@@ -13,7 +13,7 @@ namespace MediaMvvmcrossForms.Services.Interfaces
 
         event EventHandler<ParameterEventArgs<bool>> IsBufferingChanged;
 
-        event EventHandler PlaybackPositionChanged;
+        event EventHandler<ParameterEventArgs<double>> PlaybackPositionChanged;
 
         event EventHandler<ParameterEventArgs<MediaPlayerStatus>> StatusChanged;
 

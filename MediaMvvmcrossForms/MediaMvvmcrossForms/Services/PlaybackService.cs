@@ -28,7 +28,7 @@ namespace MediaMvvmcrossForms.Services
 
         public event EventHandler<ParameterEventArgs<bool>> IsBufferingChanged;
 
-        public event EventHandler PlaybackPositionChanged;
+        public event EventHandler<ParameterEventArgs<double>> PlaybackPositionChanged;
 
         public event EventHandler<ParameterEventArgs<MediaPlayerStatus>> StatusChanged;
 
@@ -84,10 +84,10 @@ namespace MediaMvvmcrossForms.Services
         {
             try
             {
-                PlaybackPositionChanged?.SafeRaise(this);
-
                 TotalDuration = e.Duration.TotalSeconds;
                 StreamingPosition = e.Position.TotalSeconds;
+
+                PlaybackPositionChanged?.SafeRaise(this, StreamingPosition);
             }
             catch (Exception ex)
             {

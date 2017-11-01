@@ -139,14 +139,14 @@ namespace MediaMvvmcrossForms.ViewModels
             await playbackService.Pause();
         }
 
-        private void PlaybackServiceOnPlaybackPositionChanged(object sender, EventArgs e)
+        private void PlaybackServiceOnPlaybackPositionChanged(object sender, ParameterEventArgs<double> e)
         {
             if (IsUserSeeking)
             {
                 return;
             }
 
-            RaisePropertyChanged(() => StreamingPosition);
+            StreamingPosition = e.Parameter1;
             RaisePropertyChanged(() => TotalDuration);
         }
 

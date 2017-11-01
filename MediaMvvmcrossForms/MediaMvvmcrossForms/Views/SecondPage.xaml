@@ -5,6 +5,8 @@
                      xmlns:core="clr-namespace:MvvmCross.Forms.Core;assembly=MvvmCross.Forms">
     <StackLayout>
         <Label Text="Second"></Label>
+        <Slider x:Name="PlaybackSlider"
+                ValueChanged="PlaybackSlider_OnValueChanged" />
         <Button x:Name="PlayButton"
                 Command="{Binding PlayCommand}"
                 Text="Play" />

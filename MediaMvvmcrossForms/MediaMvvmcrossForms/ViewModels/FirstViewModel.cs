@@ -1,18 +1,11 @@
-using System;
-using System.Windows.Input;
-using Xamarin.Forms;
+using MediaMvvmcrossForms.Services.Interfaces;
 
 namespace MediaMvvmcrossForms.ViewModels
 {
     public class FirstViewModel : BaseViewModel
     {
-        public FirstViewModel()
+        public FirstViewModel(IPlaybackService playbackService) : base(playbackService)
         {
-            Title = "About";
-
-            OpenWebCommand = new Command(() => Device.OpenUri(new Uri("https://xamarin.com/platform")));
         }
-
-        public ICommand OpenWebCommand { get; }
     }
 }

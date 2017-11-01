@@ -3,7 +3,13 @@
                      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                      x:Class="MediaMvvmcrossForms.Views.SecondPage"
                      xmlns:core="clr-namespace:MvvmCross.Forms.Core;assembly=MvvmCross.Forms">
-    <Grid>
+    <StackLayout>
         <Label Text="Second"></Label>
-    </Grid>
+        <Button x:Name="PlayButton"
+                Command="{Binding PlayCommand}"
+                Text="Play" />
+        <Button x:Name="PauseButton"
+                Command="{Binding PauseCommand}"
+                Text="Pause" />
+    </StackLayout>
 </core:MvxContentPage>

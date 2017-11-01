@@ -1,8 +1,11 @@
-using MvvmCross.Core.ViewModels;
+using MediaMvvmcrossForms.Services.Interfaces;
 
 namespace MediaMvvmcrossForms.ViewModels
 {
-    public class SecondViewModel : MvxViewModel
+    public class SecondViewModel : BaseViewModel
     {
+        public SecondViewModel(IPlaybackService playbackService) : base(playbackService)
+        {
+        }
     }
 }

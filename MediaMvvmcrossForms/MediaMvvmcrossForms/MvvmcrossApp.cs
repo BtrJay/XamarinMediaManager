@@ -1,6 +1,8 @@
 using MediaMvvmcrossForms.ViewModels;
 using MvvmCross.Core.ViewModels;
+using MvvmCross.Platform;
 using MvvmCross.Platform.IoC;
+using Plugin.MediaManager;
 
 namespace MediaMvvmcrossForms
 {
@@ -12,7 +14,9 @@ namespace MediaMvvmcrossForms
                 .AsInterfaces()
                 .RegisterAsLazySingleton();
 
-            RegisterAppStart<MainViewModel>();
+            Mvx.LazyConstructAndRegisterSingleton(() => CrossMediaManager.Current);
+
+            RegisterNavigationServiceAppStart<MainViewModel>();
         }
     }
 }

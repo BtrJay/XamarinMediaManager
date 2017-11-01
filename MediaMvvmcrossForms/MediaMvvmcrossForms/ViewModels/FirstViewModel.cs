@@ -1,13 +1,12 @@
-﻿using System;
+using System;
 using System.Windows.Input;
-
 using Xamarin.Forms;
 
-namespace MediaMvvmcrossForms
+namespace MediaMvvmcrossForms.ViewModels
 {
-    public class AboutViewModel : BaseViewModel
+    public class FirstViewModel : BaseViewModel
     {
-        public AboutViewModel()
+        public FirstViewModel()
         {
             Title = "About";
 

@@ -1,17 +1,16 @@
-﻿using System;
-
 using Android.App;
-using Android.Content;
 using Android.Content.PM;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Android.OS;
+using MvvmCross.Core.ViewModels;
+using MvvmCross.Core.Views;
+using MvvmCross.Forms.Droid;
+using MvvmCross.Forms.Droid.Presenters;
+using MvvmCross.Platform;
 
 namespace MediaMvvmcrossForms.Droid
 {
-    [Activity(Label = "MediaMvvmcrossForms.Android", Icon = "@drawable/icon", Theme = "@style/MyTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
+    [Activity(Label = "MediaMvvmcrossForms.Android", Icon = "@drawable/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    public class MainActivity : MvxFormsAppCompatActivity
     {
         protected override void OnCreate(Bundle bundle)
         {
@@ -20,14 +19,12 @@ namespace MediaMvvmcrossForms.Droid
 
             base.OnCreate(bundle);
 
-            global::Xamarin.Forms.Forms.Init(this, bundle);
-
-            LoadApplication(new App());
-        }
-
-        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
-        {
-            base.OnActivityResult(requestCode, resultCode, data);
+            // Set up mvvmcross
+            var mvxFormsApp = new App();
+            LoadApplication(mvxFormsApp);
+            var presenter = Mvx.Resolve<IMvxViewPresenter>() as MvxFormsDroidMasterDetailPagePresenter;
+            presenter.FormsApplication = mvxFormsApp;
+            Mvx.Resolve<IMvxAppStart>().Start();
         }
     }
 }

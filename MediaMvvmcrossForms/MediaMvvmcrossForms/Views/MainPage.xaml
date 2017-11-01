@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<core:MvxContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                     xmlns:core="clr-namespace:MvvmCross.Forms.Core;assembly=MvvmCross.Forms"
+                     x:Class="MediaMvvmcrossForms.Views.MainPage"
+                     Title="MediaMvvmcrossForms Sample App"
+                     Icon="hamburger.png">
+    <ListView ItemsSource="{Binding Menu}"
+              BackgroundColor="Transparent"
+              SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
+              SeparatorVisibility="None">
+        <ListView.Header>
+            <Grid HeightRequest="20" />
+        </ListView.Header>
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <ViewCell>
+                    <Grid>
+                        <Grid Margin="8">
+                            <Label Text="{Binding Title}"
+                                   FontSize="Medium" />
+                        </Grid>
+                    </Grid>
+                </ViewCell>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+</core:MvxContentPage>
